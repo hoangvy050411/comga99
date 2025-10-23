@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Cơm Gà 99</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      background: #fff8f0;
+    }
+    h1 {
+      text-align: center;
+      color: #d97706;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    label {
+      font-weight: bold;
+    }
+    select, input, button {
+      padding: 8px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      background: #fbbf24;
+      border: none;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #f59e0b;
+    }
+    .cart {
+      margin-top: 20px;
+      padding: 15px;
+      background: #fff7ed;
+      border-radius: 10px;
+    }
+    .cart ul {
+      list-style: none;
+      padding: 0;
+    }
+    .cart li {
+      padding: 5px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .remove-btn {
+      float: right;
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 2px 6px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .remove-btn:hover {
+      background: #dc2626;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🍗 Order Cơm Gà 99</h1>
+
+    <label for="table">Nhập số bàn:</label>
+    <input type="number" id="table" placeholder="VD: 1" />
+
+    <label for="category">Chọn mục:</label>
+    <select id="category" onchange="updateMenu()">
+      <option value="">-- Chọn loại món --</option>
+      <option value="comgaxoimo">Cơm gà xối mỡ</option>
+      <option value="comchien">Cơm chiên</option>
+      <option value="monthem">Món thêm</option>
+      <option value="nuoc">Nước giải khát</option>
+    </select>
+
+    <label for="dish">Chọn món:</label>
+    <select id="dish">
+      <option value="">-- Chọn món --</option>
+    </select>
+
+    <label for="quantity">Số lượng:</label>
+    <input type="number" id="quantity" value="1" min="1" />
+
+    <button onclick="addToCart()">➕ Thêm vào giỏ</button>
+
+    <div class="cart">
+      <h3>🧺 Giỏ hàng</h3>
+      <ul id="cartList"></ul>
+      <p><b>Tổng tiền: </b><span id="total">0</span> đ</p>
+      <button onclick="placeOrder()">🧾 Đặt món</button>
+    </div>
+  </div>
+
+  <script>
+    const menu = {
+      comgaxoimo: {
+        "Cơm gà góc tư": 50000,
+        "Cơm gà má đùi": 38000,
+        "Cơm gà đùi tỏi": 38000,
+        "Cơm gà da gà ốp la": 40000,
+      },
+      comchien: {
+        "Cơm chiên dương châu": 38000,
+        "Cơm chiên xá xíu": 38000,
+        "Cơm chiên 2 trứng ốp la": 48000,
+        "Cơm chiên da gà": 18000,
+      },
+      monthem: {
+        "Trứng ốp la": 7000,
+        "Da gà thêm": 10000,
+        "Canh rong biển": 10000
+      },
+      nuoc: {
+        "Sting": 15000,
+        "Pepsi": 12000,
+        "Olong xanh": 15000,
+        "Cafe đen": 12000,
+        "Cafe sữa": 15000,
+      }
+    };
+
+    let cart = [];
+
+    function updateMenu() {
+      const category = document.getElementById("category").value;
+      const dishSelect = document.getElementById("dish");
+      dishSelect.innerHTML = '<option value="">-- Chọn món --</option>';
+
+      if (menu[category]) {
+        for (const dish in menu[category]) {
+          const option = document.createElement("option");
+          option.value = dish;
+          option.textContent = `${dish} - ${menu[category][dish]}đ`;
+          dishSelect.appendChild(option);
+        }
+      }
+    }
+
+    function addToCart() {
+      const table = document.getElementById("table").value;
+      const dish = document.getElementById("dish").value;
+      const category = document.getElementById("category").value;
+      const quantity = parseInt(document.getElementById("quantity").value);
+
+      if (!table) return alert("Vui lòng nhập số bàn!");
+      if (!dish) return alert("Vui lòng chọn món!");
+      if (quantity <= 0) return alert("Số lượng phải lớn hơn 0!");
+
+      const price = menu[category][dish];
+      cart.push({ dish, price, quantity });
+
+      renderCart();
+    }
+
+    function renderCart() {
+      const cartList = document.getElementById("cartList");
+      const totalEl = document.getElementById("total");
+
+      cartList.innerHTML = "";
+      let total = 0;
+
+      cart.forEach((item, index) => {
+        const li = document.createElement("li");
+        const itemTotal = item.price * item.quantity;
+        li.innerHTML = `${item.dish} x${item.quantity} - ${itemTotal.toLocaleString()}đ
+                        <button class="remove-btn" onclick="removeItem(${index})">X</button>`;
+        cartList.appendChild(li);
+        total += itemTotal;
+      });
+
+      totalEl.textContent = total.toLocaleString();
+    }
+
+    function removeItem(index) {
+      cart.splice(index, 1);
+      renderCart();
+    }
+
+    function placeOrder() {
+      if (cart.length === 0) return alert("Giỏ hàng đang trống!");
+      const table = document.getElementById("table").value;
+      let message = `✅ Bàn ${table} đã đặt:\n`;
+      let total = 0;
+      cart.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        message += `- ${item.dish} x${item.quantity}: ${itemTotal.toLocaleString()}đ\n`;
+        total += itemTotal;
+      });
+      message += `\nTổng cộng: ${total.toLocaleString()}đ`;
+      alert(message);
+
+      // Reset sau khi đặt món
+      cart = [];
+      renderCart();
+    }
+  </script>
+</body>
+</html>
